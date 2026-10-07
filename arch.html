@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Lyncs: full architecture diagram</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{--bg:#0a0f1f;--c:rgba(255,255,255,.045);--b:rgba(255,255,255,.14);--t:#e9edfa;--m:#94a0c8;--a:#7b93ff;--a2:#22d3ee;--ok:#34d399;--wn:#fbbf24;--vi:#c4a8ff;--f:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:light){:root:not([data-theme=dark]){--bg:#f3f5fc;--c:rgba(20,30,80,.05);--b:rgba(20,30,80,.2);--t:#151b36;--m:#56618c;--a2:#0a8aa8;--ok:#0f8f62;--wn:#a86a0a;--vi:#6d4bd6;color-scheme:light}}
+:root[data-theme=light]{--bg:#f3f5fc;--c:rgba(20,30,80,.05);--b:rgba(20,30,80,.2);--t:#151b36;--m:#56618c;--a2:#0a8aa8;--ok:#0f8f62;--wn:#a86a0a;--vi:#6d4bd6;color-scheme:light}
+*{box-sizing:border-box}html,body{height:100%}
+body{margin:0;background:radial-gradient(900px 460px at 88% -8%,rgba(123,147,255,.18),transparent),var(--bg);color:var(--t);font:15px/1.55 var(--f)}
+.w{max-width:1280px;margin:auto;padding:0 18px}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:color-mix(in srgb,var(--bg) 85%,transparent);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-bottom:1px solid var(--b)}
+.tr{display:flex;align-items:center;gap:12px;padding:10px 0;flex-wrap:wrap}.tr h1{margin:0;font-size:20px;font-weight:600;letter-spacing:-.01em;flex:1;min-width:200px}
+.bt,.ib{font:600 13px var(--f);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
+.bt{padding:8px 14px;border:0;border-radius:10px;background:linear-gradient(135deg,var(--a),var(--a2));color:#06101f}
+.ib{min-width:36px;height:36px;padding:0 10px;border:1px solid var(--b);background:var(--c);color:var(--t);border-radius:10px}
+button:focus-visible,a:focus-visible,.nd:focus-visible{outline:2px solid var(--a2);outline-offset:2px}
+.lg{display:flex;flex-wrap:wrap;gap:8px;padding:12px 0 4px}
+.tg{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border:1px solid var(--b);border-radius:99px;font-size:12px;background:var(--c);color:var(--m)}.tg i{width:10px;height:10px;border-radius:3px;border:2px solid var(--m)}
+.lead{color:var(--m);margin:6px 0 0;max-width:820px}
+.dt{margin:12px 0;padding:12px 16px;border:1px solid var(--b);border-radius:14px;background:var(--c);min-height:64px}.dt b{font-size:16px}.dt span{display:block;color:var(--m);font-size:13.5px}
+.cv{overflow:auto;border:1px solid var(--b);border-radius:16px;background:var(--c);margin-bottom:28px;-webkit-overflow-scrolling:touch}
+svg{display:block;min-width:900px;width:100%;height:auto;font-family:var(--f)}
+.zh{fill:var(--m);font-size:13px;font-weight:600}.zs{fill:var(--m);font-size:11px;opacity:.8}.zb{fill:none;stroke:var(--b);stroke-dasharray:3 5}
+.nd{cursor:pointer}.nd rect{fill:var(--bg);stroke:var(--b);stroke-width:1.5;transition:.2s}.nd text{fill:var(--t);font-size:12.5px;font-weight:500}
+.nd:hover rect,.nd.on rect{stroke:var(--a2);filter:drop-shadow(0 0 8px rgba(34,211,238,.45))}
+.k-ai rect{stroke:var(--vi)}.k-hu rect{stroke:var(--wn)}.k-cl rect{stroke:var(--a2)}.k-st rect{stroke:var(--ok)}
+.k-ai i,.lg .k-ai{border-color:var(--vi)}
+.ed{fill:none;stroke:var(--m);stroke-width:1.4;opacity:.55;transition:.2s}.ed.hi{stroke:var(--a2);opacity:1;stroke-width:2.2}.dim .ed:not(.hi){opacity:.15}
+.mk{fill:var(--m)}
+.or{fill:rgba(123,147,255,.1);stroke:var(--a);stroke-dasharray:5 4}.ot{fill:var(--t);font-size:13px;font-weight:600}
+.ch rect{fill:var(--c);stroke:var(--b)}.ch text{fill:var(--m);font-size:12px}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style></head><body>
+<header class="top"><div class="w tr"><a class="ib" href="index.html" title="Back to Lyncs overview">← Back</a><h1>Lyncs: full architecture diagram</h1>
+<button class="ib" id="zo" title="Zoom out">−</button><button class="ib" id="zr" title="Fit to screen">Fit</button><button class="ib" id="zi" title="Zoom in">+</button></div></header>
+<main class="w">
+<p class="lead">Data flows left to right through five zones, with the old system only ever read. Tap any box to see what it does and light up its connections.</p>
+<div class="lg"><span class="tg"><i></i>Automatic step</span><span class="tg"><i style="border-color:var(--vi)"></i>AI proposes</span><span class="tg"><i style="border-color:var(--wn)"></i>Human review</span><span class="tg"><i style="border-color:var(--a2)"></i>Client approval</span><span class="tg"><i style="border-color:var(--ok)"></i>Data store</span></div>
+<div class="dt" id="dt"><b>Nothing selected</b><span>Choose a box in the diagram to read what it does.</span></div>
+<div class="cv"><svg id="sv" viewBox="0 0 1240 700" role="img" aria-label="Lyncs migration architecture diagram"></svg></div>
+</main>
+<script>
+const X=c=>20+c*245,Y=r=>70+54*r,W=220,H=40,NS="http://www.w3.org/2000/svg";
+const Z=[["Old systems","Read only, never changed"],["Safe intake","Copy first, transform nothing"],["Understand and agree","What is there, who owns it"],["Translate and prove","AI proposes, rules and people decide"],["Lyncs","Hidden first, then released"]];
+// id,col,row,label,kind,description
+const N=[
+["a1",0,0,"Client LMS","","The customer's old learning system, such as Moodle. Accessed with scoped, read-only credentials."],
+["a2",0,1,"HRIS, SSO, certificate tools","","Other systems that may own people, org data or issued credentials."],
+["a3",0,2,"Legacy exports, spreadsheets","","CSV, XML, JSON and standards packages supplied by the client."],
+["a4",0,3,"Database dump or backup","","Preferred where available: a consistent snapshot, no rate limits, no credential handover."],
+["pr",1,0,"Capability Probe","","Reads settings and counts only: reachable protocols, edition, rate limits, real credential scope, feasibility."],
+["ce",1,1,"Universal Connector Engine","","One generic engine driven by a per-LMS Connector Profile. Pages by stable key, never offset on live data."],
+["si",1,2,"Standards Ingestion (sandboxed)","","Parses OneRoster, SCORM, QTI, IMSCC and exports in a no-network sandbox."],
+["ds",1,3,"Dump-Restore Sandbox","","Restores a client dump into an isolated, in-region database, extracts read-only, then destroys it."],
+["lz",1,4,"Landing Zone: raw, encrypted","st","Immutable, region-pinned raw copy with manifests. Nothing is transformed before this exists."],
+["sn",1,5,"Structural Normalizer","","Unifies shape, encoding and time zones. Renames no fields."],
+["am",1,6,"Asset Migration + Sanitizer","","Runs in parallel: copies files and media, virus-scans, de-duplicates, sanitizes HTML, logs outside links, then feeds Staging."],
+["inv",2,0,"Inventory + Data Classifier","","Catalogues every entity, custom fields, dependency loops, deleted-but-kept history, and tags sensitive fields."],
+["sot",2,1,"Source-of-Truth Resolver","","Applies the client-approved owner per entity or attribute, with fallback order."],
+["er",2,2,"Duplicates + Data Quality","","Arabic-aware fuzzy matching with undoable merges, plus completeness, staleness and anomaly scorecards."],
+["ct",2,3,"Independent Control Totals","","Counts from a second channel so a short extraction cannot hide."],
+["ap",2,4,"Client Approval (Portal)","cl","Scope, owners, totals, warnings and archive policy signed with identity and an artefact hash."],
+["l1",2,5,"Entity Map + Capability Router","","Maps source entities to Lyncs entities, then routes: native, extension, archive, rebuild or reject."],
+["ua",2,6,"Unsupported Data Archive","st","Read-only, governed store with lineage for what Lyncs cannot activate yet. Nothing is dropped silently."],
+["dep",3,0,"Data Exposure Policy","","Fixes what the AI may see. Metadata only by default; restricted tenants never reach an external model."],
+["ai",3,1,"AI Mapping + Template Library","ai","Proposes field mappings from names and statistics, with scored candidates and an explicit no-match option."],
+["rk",3,2,"Risk-Class Router","","Every proposal is routed by risk. Grades, completion, certificates and roles always go to a person."],
+["lv",3,3,"Local Evidence Verifier","","Model-free check of each proposal on real samples inside the region: types, formats, links, conversions."],
+["hr",3,4,"Human Review Console","hu","Four-eyes approval for regulated or low-confidence mappings. Masked by default, with audited reveal."],
+["ms",3,5,"Frozen Mapping Set + Overrides","st","Versioned, frozen approved mappings plus a replayable ledger of human fixes."],
+["ma",3,6,"Mapping Applier + Identity Map","","Deterministic, no AI. Writes Lyncs-shaped records with repeatable IDs and loads loops in two phases."],
+["st",3,7,"Staging DB (per job, in region)","st","Canonical records awaiting validation. Dropped at purge."],
+["vr",3,8,"Validation + Reconciliation v2","","Rules, then four layers: totals, column stats, row-level values, business KPIs."],
+["ie",4,0,"Import Engine (bulk mode)","","Idempotent loader. Suppresses emails, webhooks, certificates and billing."],
+["ht",4,1,"Hidden Shadow Tenant","st","Staff-only Lyncs tenant that receives the import. Learners cannot see it."],
+["vf",4,2,"Verification","","Reconcile again, smoke-test playback, transcripts, certificates and logins, then KPI and consent parity."],
+["gn",4,3,"Signed Go / No-Go","cl","Client approver and Lyncs admin sign a checklist. No-go removes hidden data and closes the job."],
+["rl",4,4,"Release","","Side effects on, domain switched, SSO re-pointed, old certificate links redirect, activation in waves."],
+["hc",4,5,"Hypercare + Decommission","","Fixes by compensating updates, 30/60/90-day checks, credentials revoked, deletion attested."],
+["rp",4,6,"Migration Report","","Per-record dispositions, control totals, reconciliation results, loss report and attestations."]];
+const E=[["a1","pr"],["a2","ce"],["a3","si"],["a4","ds"],["pr","ce"],["ce","lz"],["si","lz"],["ds","lz"],["lz","sn"],["sn","inv"],["inv","sot"],["sot","er"],["er","ct"],["ct","ap"],["ap","l1"],["l1","ua"],["l1","dep"],["dep","ai"],["ai","rk"],["rk","lv"],["rk","hr"],["lv","hr"],["lv","ms"],["hr","ms"],["ms","ma"],["ma","st"],["st","vr"],["vr","ie"],["ie","ht"],["ht","vf"],["vf","gn"],["gn","rl"],["rl","hc"],["hc","rp"]];
+const CH=["Credential Vault","Append-only audit log","Classification and masking","Per-job keys and purge","Cost meters and caps","Region-pinned storage and logs"];
+const sv=document.getElementById("sv"),M={};N.forEach(n=>M[n[0]]=n);
+const el=(t,a,p=sv)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);p.appendChild(e);return e};
+const df=el("defs",{});el("path",{d:"M0 0L8 4L0 8z",class:"mk"},el("marker",{id:"ar",viewBox:"0 0 8 8",refX:7,refY:4,markerWidth:7,markerHeight:7,orient:"auto"},df));
+Z.forEach((z,c)=>{el("rect",{x:X(c)-8,y:12,width:W+16,height:Y(9)-20,rx:16,class:"zb"});el("text",{x:X(c)+4,y:34,class:"zh"}).textContent=z[0];el("text",{x:X(c)+4,y:50,class:"zs"}).textContent=z[1]});
+const gap=[0,0,0,0,0],eds=[];
+E.forEach(([f,t])=>{const a=M[f],b=M[t],ca=a[1],cb=b[1],ya=Y(a[2])+H/2,yb=Y(b[2])+H/2;let d;
+if(ca==cb&&b[2]==a[2]+1){const x=X(ca)+W/2;d=`M${x} ${Y(a[2])+H}V${Y(b[2])}`}
+else{const l=X(ca)+W+5+(gap[ca]++%4)*5,sx=X(ca)+W,ex=ca==cb?X(cb)+W:X(cb);d=`M${sx} ${ya}H${l}V${yb}H${ex}`}
+eds.push([f,t,el("path",{d,class:"ed","marker-end":"url(#ar)"})])});
+const dt=document.getElementById("dt");let sel=null;
+const nds=N.map(n=>{const g=el("g",{class:"nd"+(n[4]?" k-"+n[4]:""),tabindex:0,role:"button","aria-label":n[3]});
+el("rect",{x:X(n[1]),y:Y(n[2]),width:W,height:H,rx:10},g);const t=el("text",{x:X(n[1])+W/2,y:Y(n[2])+H/2+4,"text-anchor":"middle"},g);t.textContent=n[3];
+const pick=()=>{sel=sel==n[0]?null:n[0];nds.forEach(([i,e])=>e.classList.toggle("on",i==sel));
+sv.classList.toggle("dim",!!sel);eds.forEach(([f,t,p])=>p.classList.toggle("hi",!!sel&&(f==sel||t==sel)));
+dt.innerHTML=sel?`<b>${n[3]}</b><span>${n[5]}</span>`:"<b>Nothing selected</b><span>Choose a box in the diagram to read what it does.</span>"};
+g.onclick=pick;g.onkeydown=e=>{if(e.key=="Enter"||e.key==" "){e.preventDefault();pick()}};return[n[0],g]});
+const oy=Y(9)+14;el("rect",{x:20,y:oy,width:1200,height:36,rx:10,class:"or"});el("text",{x:620,y:oy+23,"text-anchor":"middle",class:"ot"}).textContent="Orchestrator: job state machine, checkpoints and retries. Every step is safe to repeat.";
+CH.forEach((c,i)=>{const g=el("g",{class:"ch"}),x=20+i*204;el("rect",{x,y:oy+50,width:192,height:30,rx:8},g);el("text",{x:x+96,y:oy+70,"text-anchor":"middle"},g).textContent=c});
+let z=1;const fit=v=>{z=Math.min(2.2,Math.max(.7,v));sv.style.width=z*100+"%"};
+zi.onclick=()=>fit(z+.25);zo.onclick=()=>fit(z-.25);zr.onclick=()=>fit(1);
+</script></body></html>
