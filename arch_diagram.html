@@ -1,0 +1,726 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title> Migration Platform — Architecture Diagrams (Rev 12)</title>
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({startOnLoad:true,securityLevel:'strict',theme:'default',flowchart:{htmlLabels:true,curve:'basis'},stateDiagram:{useMaxWidth:true}});
+  window.addEventListener('DOMContentLoaded',()=>{
+    document.querySelectorAll('[data-show-source]').forEach(btn=>btn.addEventListener('click',()=>{
+      const pre=btn.nextElementSibling; pre.hidden=!pre.hidden; btn.textContent=pre.hidden?'Show Mermaid source':'Hide Mermaid source';
+    }));
+    document.querySelectorAll('[data-expand]').forEach(btn=>btn.addEventListener('click',()=>{
+      const el=btn.closest('.diagram-card'); el.classList.toggle('wide'); btn.textContent=el.classList.contains('wide')?'Restore width':'Expand diagram';
+    }));
+  });
+</script>
+<style>
+:root{color-scheme:light;--ink:#17233b;--muted:#65728a;--line:#e0e7f0;--paper:#f4f7fc;--card:#fff;--accent:#5267e8;--accent2:#13a889;--navy:#0b1430;--shadow:0 12px 34px rgba(24,39,75,.07)}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:92px}body{margin:0;background:radial-gradient(ellipse at 85% 0%,#e8edff 0,transparent 34%),var(--paper);color:var(--ink);font:15px/1.6 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
+header{position:relative;overflow:hidden;background:linear-gradient(120deg,#0b1430 0%,#182653 58%,#3d4bc0 100%);color:#fff;padding:54px clamp(20px,6vw,88px) 46px}header:before,header:after{content:"";position:absolute;border:1px solid #ffffff18;border-radius:50%;pointer-events:none}header:before{width:440px;height:440px;right:-90px;top:-260px;box-shadow:0 0 0 38px #ffffff08,0 0 0 78px #ffffff05}header:after{width:220px;height:220px;right:17%;bottom:-180px;background:#ffffff08}header .eyebrow{display:inline-flex;align-items:center;gap:8px;border:1px solid #ffffff35;background:#ffffff0d;border-radius:999px;padding:6px 11px;color:#dbe4ff;font-size:11px;font-weight:750;letter-spacing:.12em;text-transform:uppercase;margin-bottom:18px}header .eyebrow span{width:7px;height:7px;background:#5de0bd;border-radius:50%;box-shadow:0 0 12px #5de0bd}header h1{position:relative;margin:0 0 12px;font-size:clamp(30px,4vw,50px);letter-spacing:-.04em;line-height:1.08;max-width:850px}header p{position:relative;margin:0;color:#c8d3f0;max-width:760px;font-size:16px}header .hero-meta{position:relative;display:flex;gap:9px;flex-wrap:wrap;margin-top:24px}header .hero-meta span{border:1px solid #ffffff25;background:#ffffff0c;color:#edf1ff;border-radius:9px;padding:7px 10px;font-size:12px}
+nav{position:sticky;top:0;z-index:20;display:flex;gap:7px;align-items:center;overflow-x:auto;padding:11px clamp(12px,4vw,54px);background:#ffffffed;backdrop-filter:blur(14px);border-bottom:1px solid #dfe6f1;box-shadow:0 4px 14px #17203308}nav a{flex-shrink:0;text-decoration:none;color:#53617a;font-size:13px;font-weight:650;padding:8px 12px;border-radius:9px;transition:.18s}nav a:hover{color:#3448bf;background:#eef1ff}nav .nav-label{font-size:10px;text-transform:uppercase;letter-spacing:.13em;font-weight:800;color:#8a95a8;margin-right:6px}
+main{max-width:1600px;margin:0 auto;padding:30px clamp(14px,3.8vw,56px) 64px}.intro{position:relative;display:flex;gap:14px;align-items:flex-start;background:linear-gradient(120deg,#eef2ff,#f0fbf8);border:1px solid #dce4ff;padding:17px 19px;border-radius:15px;margin-bottom:30px;color:#34466b;box-shadow:0 4px 18px #3246a208}.intro .intro-icon{display:grid;place-items:center;flex:0 0 34px;height:34px;border-radius:10px;background:#dfe6ff;color:#4358d8;font-weight:900}.intro strong{color:#1d2d56}.intro p{margin:0}.intro .small{display:block;margin-top:3px;font-size:13px;color:#63718a}
+section{margin:42px 0;scroll-margin-top:86px}section>h2{font-size:clamp(23px,2.5vw,30px);letter-spacing:-.035em;margin:0 0 5px;display:flex;align-items:center;gap:11px}section>h2:before{content:"";width:5px;height:27px;border-radius:9px;background:linear-gradient(#6475f0,#21b99b);display:inline-block}section>.desc{margin:0 0 20px;color:var(--muted);font-size:15px}.diagram-card{background:var(--card);border:1px solid #e0e7f0;border-radius:18px;padding:clamp(14px,2vw,25px);margin:18px 0 22px;box-shadow:var(--shadow);overflow:hidden;transition:box-shadow .2s,border-color .2s}.diagram-card:hover{box-shadow:0 16px 42px #18274b12;border-color:#cbd6ee}.diagram-card h3{margin:0 0 5px;font-size:19px;letter-spacing:-.02em}.source-note{color:#7a879d;font-size:12px;font-weight:550;margin:0 0 10px}.actions{display:flex;gap:8px;flex-wrap:wrap;margin:13px 0 17px;padding-bottom:14px;border-bottom:1px solid #edf0f6}button{border:1px solid #d9e1ee;background:#fff;color:#43516b;border-radius:9px;padding:8px 12px;cursor:pointer;font:inherit;font-size:12px;font-weight:700;transition:all .18s}button:hover{background:#eef2ff;border-color:#bfcaff;color:#394bc0;transform:translateY(-1px)}button[data-expand]{background:#4c5fe0;border-color:#4c5fe0;color:white}button[data-expand]:hover{background:#394bc0}.mermaid{overflow:auto;text-align:center;min-height:100px;padding:8px 2px 14px;border-radius:12px;background:linear-gradient(180deg,#fbfcff,#fff)}.mermaid svg{max-width:100%;height:auto}.mermaid .node rect,.mermaid .node polygon,.mermaid .node circle{filter:drop-shadow(0 2px 2px #1d2b4210)}.diagram-card.wide{width:calc(100vw - 32px);max-width:none;position:relative;left:50%;transform:translateX(-50%);z-index:5}.diagram-card.wide .mermaid{background:#fbfcff}pre{white-space:pre;overflow:auto;background:#0c1428;color:#dce6ff;border:1px solid #202d4b;border-radius:12px;padding:16px;font-size:12px;line-height:1.6;max-height:440px}footer{border-top:1px solid var(--line);padding-top:20px;color:var(--muted);font-size:13px}.footer-pill{display:inline-block;background:#e8edff;color:#4052bd;padding:4px 8px;border-radius:6px;font-size:11px;font-weight:800;margin-right:8px}
+@media(max-width:700px){header{padding-top:38px;padding-bottom:34px}header p{font-size:14px}nav{padding:8px 10px}nav .nav-label{display:none}main{padding-top:18px}.diagram-card{padding:12px;border-radius:14px}.mermaid{text-align:left}.diagram-card.wide{width:calc(100vw - 12px)}section{margin:32px 0}.intro{padding:13px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+@media print{body{background:white}nav{display:none}header{background:#17233b!important;print-color-adjust:exact}.actions{display:none}.diagram-card{break-inside:avoid;box-shadow:none;border:1px solid #ddd}.diagram-card.wide{width:100%;left:auto;transform:none}.mermaid{overflow:visible}}
+</style>
+</head>
+<body>
+<header><div class="eyebrow"><span></span> PLATFORM ARCHITECTURE · REV 12</div><h1>Bloom LMS<br>Migration Platform</h1><p>A clear, end-to-end view of the migration journey — from secure discovery and governed mapping to verified release and hypercare.</p><div class="hero-meta"><span>01 · High-level architecture</span><span>02 · Component architecture</span><span>Governance-first · AI optional</span></div></header>
+<nav aria-label="Architecture sections"><span class="nav-label">Explore</span><a href="#legend">Legend</a><a href="#high-level">A · High-level</a><a href="#system-context">A1 · System context</a><a href="#pipeline">A2 · Pipeline</a><a href="#lifecycle">A3 · Lifecycle</a><a href="#low-level">B · Low-level</a><a href="#components">B1 · Components</a></nav>
+<main>
+<div class="intro"><div class="intro-icon">↗</div><p><strong>Architecture explorer</strong><span class="small">Use the section navigation to jump between views. Expand wide diagrams for detail, or open Mermaid source when you need to inspect or reuse a diagram. Internet access is required to render the diagrams.</span></p></div>
+<section id="legend"><h2>Legend</h2><p class="desc">Shared visual language used throughout the architecture.</p>
+<div class="diagram-card"><div class="mermaid">
+flowchart LR
+    LG1["Service or component"]
+    LG2[("Data store")]:::store
+    LG3{"Decision or gate"}
+    LG4["Human or client touchpoint"]:::human
+    LG5["AI-assisted, optional per job"]:::ai
+    LG6["Bloom platform side"]:::bloom
+    LG7["Control or security plane"]:::ctrl
+    LG8["Deferred, not in the Migration #1 slice"]:::deferred
+    LG1 ~~~ LG2 ~~~ LG3 ~~~ LG4 ~~~ LG5 ~~~ LG6 ~~~ LG7 ~~~ LG8
+    classDef store fill:#e0f2fe,stroke:#0369a1,color:#0c4a6e
+    classDef human fill:#fef3c7,stroke:#b45309,color:#78350f
+    classDef ai fill:#ede9fe,stroke:#6d28d9,color:#3b0764
+    classDef bloom fill:#dcfce7,stroke:#15803d,color:#14532d
+    classDef ctrl fill:#e2e8f0,stroke:#475569,color:#0f172a
+    classDef deferred fill:#f3f4f6,stroke:#6b7280,color:#374151,stroke-dasharray:5 5
+</div></div></section>
+<section id="high-level"><h2>Part A — High-Level Architecture</h2><p class="desc">System context, end-to-end pipeline, and lifecycle state machine.</p>
+<div class="diagram-card" id="system-context"><h3>A1. System context</h3><p class="source-note">Source: §3.3, §3.4, §7.7</p><div class="actions"><button data-expand>Expand diagram</button><button data-show-source>Show Mermaid source</button></div><div class="mermaid">
+flowchart TB
+    CLIENT["Client approvers and data steward"]:::human
+    PORTAL["Client Portal<br/>append-only approvals with identity and artefact hash,<br/>Arabic and English with RTL"]:::human
+    SRC["Client source systems<br/>LMS, HRIS / SSO, certificate and proctoring tools,<br/>exports and spreadsheets, standards packages,<br/>DB dumps and backups"]
+    subgraph SVC["Bloom Migration Service - region-pinned per tenant"]
+        S1["1. Probe and extract<br/>Capability Probe, Connector Layer,<br/>Standards Ingestion, Dump-Restore Sandbox"]
+        S2["2. Land and normalise<br/>Landing Zone, Structural Normalizer"]
+        S3["3. Govern<br/>source inventory and classification, source of truth,<br/>entity resolution, data quality,<br/>independent control totals"]
+        S4["4. Route and map<br/>L1 entity mapping, Target Capability Router,<br/>AI-assisted proposals, risk routing,<br/>local verification, frozen mapping set"]
+        S5["5. Apply and stage<br/>Mapping Applier, Identity Map,<br/>asset migration, per-job Staging DB"]
+        S6["6. Validate and reconcile<br/>Validation Engine, Reconciliation Engine v2"]
+        S7["7. Rehearse, delta and load<br/>dress rehearsal, source freeze, delta,<br/>Import Engine in bulk-import mode"]
+        S1 --> S2 --> S3 --> S4 --> S5 --> S6 --> S7
+    end
+    REVIEW["Bloom reviewers and admins<br/>Human Review Console,<br/>four-eyes on regulated fields"]:::human
+    AIEP["AI model endpoint<br/>Tier 0 schema metadata, Tier 1 masked samples,<br/>never reached by restricted tenants, AI-off supported"]:::ai
+    ARCH[("Unsupported Data Archive<br/>read-only, object lock, fixity checks")]:::store
+    BLOOM["Bloom platform<br/>bulk-import mode, hidden shadow tenant,<br/>verification, signed go/no-go, live tenant,<br/>Verification Proxy for old certificate URLs"]:::bloom
+    REPORT["Migration report<br/>loss and fidelity, control totals, reconciliation,<br/>KPI parity, attestations"]
+    CTRL["Control plane<br/>Orchestrator with pre-job gate, Reporting,<br/>Cost Meter, append-only audit log"]:::ctrl
+    SECP["Security and compliance plane<br/>Credential Vault, per-job KMS keys, egress proxy,<br/>sandboxes, data classification"]:::ctrl
+    SRC -->|"read-only, scoped, effective scope audited"| S1
+    CLIENT --> PORTAL
+    PORTAL <-->|"scope, source of truth, identity policy, control totals, disposition policy"| S3
+    REVIEW <-->|"low-confidence and regulated mappings, merges, anomalies"| S4
+    S4 <-->|"Tier 0 / Tier 1 only"| AIEP
+    S4 -->|"unsupported entities"| ARCH
+    S7 --> BLOOM
+    PORTAL -->|"rehearsal sign-off, go / no-go"| BLOOM
+    BLOOM --> REPORT
+    CTRL -.->|"orchestrates, meters, audits"| SVC
+    SECP -.->|"secrets, keys, egress, isolation"| SVC
+    classDef store fill:#e0f2fe,stroke:#0369a1,color:#0c4a6e
+    classDef human fill:#fef3c7,stroke:#b45309,color:#78350f
+    classDef ai fill:#ede9fe,stroke:#6d28d9,color:#3b0764
+    classDef bloom fill:#dcfce7,stroke:#15803d,color:#14532d
+    classDef ctrl fill:#e2e8f0,stroke:#475569,color:#0f172a
+</div><pre hidden>flowchart TB
+    CLIENT["Client approvers and data steward"]:::human
+    PORTAL["Client Portal<br/>append-only approvals with identity and artefact hash,<br/>Arabic and English with RTL"]:::human
+    SRC["Client source systems<br/>LMS, HRIS / SSO, certificate and proctoring tools,<br/>exports and spreadsheets, standards packages,<br/>DB dumps and backups"]
+    subgraph SVC["Bloom Migration Service - region-pinned per tenant"]
+        S1["1. Probe and extract<br/>Capability Probe, Connector Layer,<br/>Standards Ingestion, Dump-Restore Sandbox"]
+        S2["2. Land and normalise<br/>Landing Zone, Structural Normalizer"]
+        S3["3. Govern<br/>source inventory and classification, source of truth,<br/>entity resolution, data quality,<br/>independent control totals"]
+        S4["4. Route and map<br/>L1 entity mapping, Target Capability Router,<br/>AI-assisted proposals, risk routing,<br/>local verification, frozen mapping set"]
+        S5["5. Apply and stage<br/>Mapping Applier, Identity Map,<br/>asset migration, per-job Staging DB"]
+        S6["6. Validate and reconcile<br/>Validation Engine, Reconciliation Engine v2"]
+        S7["7. Rehearse, delta and load<br/>dress rehearsal, source freeze, delta,<br/>Import Engine in bulk-import mode"]
+        S1 --> S2 --> S3 --> S4 --> S5 --> S6 --> S7
+    end
+    REVIEW["Bloom reviewers and admins<br/>Human Review Console,<br/>four-eyes on regulated fields"]:::human
+    AIEP["AI model endpoint<br/>Tier 0 schema metadata, Tier 1 masked samples,<br/>never reached by restricted tenants, AI-off supported"]:::ai
+    ARCH[("Unsupported Data Archive<br/>read-only, object lock, fixity checks")]:::store
+    BLOOM["Bloom platform<br/>bulk-import mode, hidden shadow tenant,<br/>verification, signed go/no-go, live tenant,<br/>Verification Proxy for old certificate URLs"]:::bloom
+    REPORT["Migration report<br/>loss and fidelity, control totals, reconciliation,<br/>KPI parity, attestations"]
+    CTRL["Control plane<br/>Orchestrator with pre-job gate, Reporting,<br/>Cost Meter, append-only audit log"]:::ctrl
+    SECP["Security and compliance plane<br/>Credential Vault, per-job KMS keys, egress proxy,<br/>sandboxes, data classification"]:::ctrl
+    SRC -->|"read-only, scoped, effective scope audited"| S1
+    CLIENT --> PORTAL
+    PORTAL <-->|"scope, source of truth, identity policy, control totals, disposition policy"| S3
+    REVIEW <-->|"low-confidence and regulated mappings, merges, anomalies"| S4
+    S4 <-->|"Tier 0 / Tier 1 only"| AIEP
+    S4 -->|"unsupported entities"| ARCH
+    S7 --> BLOOM
+    PORTAL -->|"rehearsal sign-off, go / no-go"| BLOOM
+    BLOOM --> REPORT
+    CTRL -.->|"orchestrates, meters, audits"| SVC
+    SECP -.->|"secrets, keys, egress, isolation"| SVC</pre></div>
+<div class="diagram-card" id="pipeline"><h3>A2. End-to-end pipeline</h3><p class="source-note">Source: §3.3, §8.3, §8.4, §8.5, §8.5b</p><div class="actions"><button data-expand>Expand diagram</button><button data-show-source>Show Mermaid source</button></div><div class="mermaid">
+flowchart TD
+    subgraph SRC["Client estate - read-only, scoped access"]
+        A["Client LMS"]
+        A2["HRIS / SSO"]
+        A4["Certificate / proctoring tools"]
+        A3["Legacy exports / spreadsheets"]
+        A5["DB dump / backup"]
+    end
+    PG["Pre-job gate<br/>DPA, DPIA, sub-processors approved, residency tier,<br/>erasure and legal-hold lists, authority-to-extract,<br/>contract end date"]:::ctrl
+    subgraph ACQ["Stage 1 - Probe and bounded discovery extraction"]
+        PR["Capability Probe<br/>metadata and counts only"]
+        CS{"Credential scope audit<br/>declared baseline vs what is returned"}
+        C8{"Client: broader scope<br/>or accept the gap?"}:::human
+        FC["Consistency mode M1 / M2 / M3<br/>+ feasibility calculator<br/>strategy per entity: API, bulk export, dump, manual"]
+        B["Connector Layer<br/>Universal Connector Engine"]
+        S["Standards Ingestion Layer<br/>sandboxed parsers"]
+        DRS["Dump-Restore Sandbox"]
+        LZ[("Landing Zone<br/>raw, immutable, encrypted")]:::store
+        C["Structural Normalizer"]
+    end
+    subgraph GOV["Stage 2 - Govern, count and approve"]
+        X2["Source Inventory Service<br/>+ Data Classifier"]
+        O["Source-of-Truth Resolver"]
+        Q["Entity Resolution + Data Quality Profiler<br/>+ Independent Control Totals"]
+        DAG{"Scope closed under the Bloom import DAG?<br/>cycles, blackout calendar, feasibility window"}
+        CA{"Client Approval<br/>Client Portal"}:::human
+        FX["Full extraction<br/>per-entity strategy, checkpointed,<br/>into the Landing Zone, then the Normalizer"]
+    end
+    subgraph MAP["Stage 3 - Route and map"]
+        L1["L1 Entity Mapping<br/>profile-declared"]
+        Y["Target Capability Router<br/>disposition policy + exceptions"]
+        Z["Extension Import Path<br/>targets Bloom extension modules"]
+        P{"Data Exposure Policy"}
+        D["AI Mapping Engine<br/>+ Mapping Template Library"]:::ai
+        N["Unstructured Extraction Service"]:::ai
+        RK{"Risk-Class Router"}
+        LEV["Local Evidence Verifier"]
+        F["Human Review Console"]:::human
+        MS[("Frozen Mapping Set<br/>+ Overrides Ledger")]:::store
+    end
+    subgraph KEEP["Preserved or excluded - still counted"]
+        U[("Unsupported Data Archive<br/>+ Loss Report")]:::store
+        RJQ{"Client approves<br/>rejection policy?"}:::human
+        RJ["Excluded by client policy"]
+    end
+    subgraph STG["Stage 4 - Apply, stage and verify"]
+        M["Mapping Applier<br/>idempotent per job, entity, batch, mapping-set version"]
+        R["Relationship Identity Map<br/>deterministic IDs"]
+        E[("Staging DB<br/>per-job schema, region-pinned")]:::store
+        AST["Asset Migration Service<br/>+ Content Sanitizer"]
+        TWO["Two-phase load plan<br/>shells, reference patch,<br/>content reference rewriting"]
+        G["Validation Engine"]
+        RC["Reconciliation Engine v2"]
+        I["Dead Letter Queue / Remediation"]
+    end
+    subgraph CUT["Stage 5 - Rehearse, freeze and delta"]
+        REH["Dress rehearsal<br/>hidden shadow tenant, full volume, timed,<br/>reconciliation v2 + smoke tests + KPI parity,<br/>read-only client UAT"]
+        SIGN{"Client sign-off<br/>on rehearsal"}:::human
+        FRZ["Source freeze<br/>writes stop, in-flight inventory taken"]
+        DX["Delta extraction<br/>changed records + key-set diff for hard deletes"]
+        DN["Normalise, apply frozen mapping set<br/>+ overrides ledger, stage"]
+        DV["Validate and reconcile the delta"]
+        DR2["Delta remediation"]
+    end
+    subgraph BLM["Stage 6 - Hidden import, verify and release"]
+        IM["Import Engine<br/>bulk-import mode"]
+        H[("Hidden Shadow Tenant<br/>staff-only, side effects suppressed")]:::bloom
+        V["Verification<br/>reconciliation v2 vs independent totals, smoke tests,<br/>KPI parity, consent parity, bulk-import-mode check"]
+        GN{"Signed go/no-go<br/>client approver + Bloom admin"}:::human
+        REL["Release<br/>side effects on, domain flip,<br/>SSO / LTI / webhooks re-pointed,<br/>redirect map, activation waves"]:::bloom
+        RB["Rollback before release<br/>tenant data removed, audit kept, job closed"]
+        J["Migration Report"]
+        VP["Verification Proxy<br/>certificate verification + redirect map"]:::bloom
+    end
+    subgraph POST["Stage 7 - Hypercare and decommission"]
+        HC["Hypercare<br/>defect triage, compensating corrections only,<br/>30 / 60 / 90-day reconciliation, dependency re-crawl"]
+        EX{"Exit criteria met?"}
+        DG{"Decommission gate"}
+        CL["Close job<br/>credentials revoked + attestation, deletion attestation,<br/>final snapshot escrowed, retention clock starts"]
+    end
+    K["Orchestrator<br/>job state machine + checkpoints"]:::ctrl
+    PG --> PR
+    A -->|"scoped, read-only credentials"| PR
+    A2 -->|"scoped, read-only credentials"| PR
+    A4 --> PR
+    A3 --> S
+    A5 --> DRS
+    PR --> CS
+    CS -->|"gap found"| C8
+    C8 -->|"rescoped, re-audit"| CS
+    C8 -->|"proceed at reduced scope, gap flagged"| FC
+    CS -->|sufficient| FC
+    FC --> B
+    B --> LZ
+    S --> LZ
+    DRS --> LZ
+    LZ --> C
+    C --> X2
+    X2 --> O
+    O --> Q
+    Q --> DAG
+    DAG -->|"gap found"| X2
+    DAG -->|complete| CA
+    CA -->|"changes requested"| O
+    CA -->|approved| FX
+    FX --> L1
+    L1 --> Y
+    L1 -->|"unknown source type"| U
+    Y -->|"native Bloom support"| P
+    Y -->|"Bloom extension needed"| Z
+    Z --> P
+    Y -->|"not yet supported"| U
+    Y -->|"manual rebuild required"| F
+    Y -->|"rejected, pending approval"| RJQ
+    RJQ -->|yes| RJ
+    RJQ -->|"declined, needs new disposition"| F
+    P -->|"Tier 0: schema metadata only - all tenants"| D
+    P -->|"Tier 1: masked samples - non-restricted + DPA only"| D
+    P -->|"unstructured fields, policy allows"| N
+    P -->|"restricted tenant or AI-off"| F
+    D --> RK
+    RK -->|regulated| F
+    RK -->|"reference / standard"| LEV
+    LEV -->|"pass and auto-eligible"| MS
+    LEV -->|"fail or human-required"| F
+    N -->|"low confidence or restricted"| F
+    N -->|"approved signals"| E
+    F -->|approved| MS
+    MS --> M
+    M --> R
+    R --> E
+    A -.->|"media, packages, embedded HTML"| AST
+    AST --> E
+    E --> TWO
+    TWO --> G
+    G -->|pass| RC
+    G -->|fail| I
+    I -->|"remediate and replay"| M
+    RC -->|gap| I
+    U -.->|"archived records counted"| RC
+    RJ -.->|"excluded records counted"| RC
+    AST -.->|"asset manifests + dependency register"| RC
+    RC -->|balanced| REH
+    REH --> SIGN
+    SIGN -->|"issues found"| F
+    SIGN -->|approved| FRZ
+    FRZ --> DX
+    DX --> DN
+    DN --> DV
+    DV -->|issues| DR2
+    DR2 --> DX
+    DV -->|clean| IM
+    IM --> H
+    H --> V
+    V --> GN
+    GN -->|yes| REL
+    GN -->|no| RB
+    REL --> J
+    REL --> VP
+    REL --> HC
+    HC --> EX
+    EX -->|no| HC
+    EX -->|yes| DG
+    DG -->|"item open"| HC
+    DG -->|"all satisfied"| CL
+    K -.-> PG
+    K -.-> ACQ
+    K -.-> GOV
+    K -.-> MAP
+    K -.-> STG
+    K -.-> CUT
+    K -.-> BLM
+    K -.-> POST
+    classDef store fill:#e0f2fe,stroke:#0369a1,color:#0c4a6e
+    classDef human fill:#fef3c7,stroke:#b45309,color:#78350f
+    classDef ai fill:#ede9fe,stroke:#6d28d9,color:#3b0764
+    classDef bloom fill:#dcfce7,stroke:#15803d,color:#14532d
+    classDef ctrl fill:#e2e8f0,stroke:#475569,color:#0f172a
+</div><pre hidden>flowchart TD
+    subgraph SRC["Client estate - read-only, scoped access"]
+        A["Client LMS"]
+        A2["HRIS / SSO"]
+        A4["Certificate / proctoring tools"]
+        A3["Legacy exports / spreadsheets"]
+        A5["DB dump / backup"]
+    end
+    PG["Pre-job gate<br/>DPA, DPIA, sub-processors approved, residency tier,<br/>erasure and legal-hold lists, authority-to-extract,<br/>contract end date"]:::ctrl
+    subgraph ACQ["Stage 1 - Probe and bounded discovery extraction"]
+        PR["Capability Probe<br/>metadata and counts only"]
+        CS{"Credential scope audit<br/>declared baseline vs what is returned"}
+        C8{"Client: broader scope<br/>or accept the gap?"}:::human
+        FC["Consistency mode M1 / M2 / M3<br/>+ feasibility calculator<br/>strategy per entity: API, bulk export, dump, manual"]
+        B["Connector Layer<br/>Universal Connector Engine"]
+        S["Standards Ingestion Layer<br/>sandboxed parsers"]
+        DRS["Dump-Restore Sandbox"]
+        LZ[("Landing Zone<br/>raw, immutable, encrypted")]:::store
+        C["Structural Normalizer"]
+    end
+    subgraph GOV["Stage 2 - Govern, count and approve"]
+        X2["Source Inventory Service<br/>+ Data Classifier"]
+        O["Source-of-Truth Resolver"]
+        Q["Entity Resolution + Data Quality Profiler<br/>+ Independent Control Totals"]
+        DAG{"Scope closed under the Bloom import DAG?<br/>cycles, blackout calendar, feasibility window"}
+        CA{"Client Approval<br/>Client Portal"}:::human
+        FX["Full extraction<br/>per-entity strategy, checkpointed,<br/>into the Landing Zone, then the Normalizer"]
+    end
+    subgraph MAP["Stage 3 - Route and map"]
+        L1["L1 Entity Mapping<br/>profile-declared"]
+        Y["Target Capability Router<br/>disposition policy + exceptions"]
+        Z["Extension Import Path<br/>targets Bloom extension modules"]
+        P{"Data Exposure Policy"}
+        D["AI Mapping Engine<br/>+ Mapping Template Library"]:::ai
+        N["Unstructured Extraction Service"]:::ai
+        RK{"Risk-Class Router"}
+        LEV["Local Evidence Verifier"]
+        F["Human Review Console"]:::human
+        MS[("Frozen Mapping Set<br/>+ Overrides Ledger")]:::store
+    end
+    subgraph KEEP["Preserved or excluded - still counted"]
+        U[("Unsupported Data Archive<br/>+ Loss Report")]:::store
+        RJQ{"Client approves<br/>rejection policy?"}:::human
+        RJ["Excluded by client policy"]
+    end
+    subgraph STG["Stage 4 - Apply, stage and verify"]
+        M["Mapping Applier<br/>idempotent per job, entity, batch, mapping-set version"]
+        R["Relationship Identity Map<br/>deterministic IDs"]
+        E[("Staging DB<br/>per-job schema, region-pinned")]:::store
+        AST["Asset Migration Service<br/>+ Content Sanitizer"]
+        TWO["Two-phase load plan<br/>shells, reference patch,<br/>content reference rewriting"]
+        G["Validation Engine"]
+        RC["Reconciliation Engine v2"]
+        I["Dead Letter Queue / Remediation"]
+    end
+    subgraph CUT["Stage 5 - Rehearse, freeze and delta"]
+        REH["Dress rehearsal<br/>hidden shadow tenant, full volume, timed,<br/>reconciliation v2 + smoke tests + KPI parity,<br/>read-only client UAT"]
+        SIGN{"Client sign-off<br/>on rehearsal"}:::human
+        FRZ["Source freeze<br/>writes stop, in-flight inventory taken"]
+        DX["Delta extraction<br/>changed records + key-set diff for hard deletes"]
+        DN["Normalise, apply frozen mapping set<br/>+ overrides ledger, stage"]
+        DV["Validate and reconcile the delta"]
+        DR2["Delta remediation"]
+    end
+    subgraph BLM["Stage 6 - Hidden import, verify and release"]
+        IM["Import Engine<br/>bulk-import mode"]
+        H[("Hidden Shadow Tenant<br/>staff-only, side effects suppressed")]:::bloom
+        V["Verification<br/>reconciliation v2 vs independent totals, smoke tests,<br/>KPI parity, consent parity, bulk-import-mode check"]
+        GN{"Signed go/no-go<br/>client approver + Bloom admin"}:::human
+        REL["Release<br/>side effects on, domain flip,<br/>SSO / LTI / webhooks re-pointed,<br/>redirect map, activation waves"]:::bloom
+        RB["Rollback before release<br/>tenant data removed, audit kept, job closed"]
+        J["Migration Report"]
+        VP["Verification Proxy<br/>certificate verification + redirect map"]:::bloom
+    end
+    subgraph POST["Stage 7 - Hypercare and decommission"]
+        HC["Hypercare<br/>defect triage, compensating corrections only,<br/>30 / 60 / 90-day reconciliation, dependency re-crawl"]
+        EX{"Exit criteria met?"}
+        DG{"Decommission gate"}
+        CL["Close job<br/>credentials revoked + attestation, deletion attestation,<br/>final snapshot escrowed, retention clock starts"]
+    end
+    K["Orchestrator<br/>job state machine + checkpoints"]:::ctrl
+    PG --> PR
+    A -->|"scoped, read-only credentials"| PR
+    A2 -->|"scoped, read-only credentials"| PR
+    A4 --> PR
+    A3 --> S
+    A5 --> DRS
+    PR --> CS
+    CS -->|"gap found"| C8
+    C8 -->|"rescoped, re-audit"| CS
+    C8 -->|"proceed at reduced scope, gap flagged"| FC
+    CS -->|sufficient| FC
+    FC --> B
+    B --> LZ
+    S --> LZ
+    DRS --> LZ
+    LZ --> C
+    C --> X2
+    X2 --> O
+    O --> Q
+    Q --> DAG
+    DAG -->|"gap found"| X2
+    DAG -->|complete| CA
+    CA -->|"changes requested"| O
+    CA -->|approved| FX
+    FX --> L1
+    L1 --> Y
+    L1 -->|"unknown source type"| U
+    Y -->|"native Bloom support"| P
+    Y -->|"Bloom extension needed"| Z
+    Z --> P
+    Y -->|"not yet supported"| U
+    Y -->|"manual rebuild required"| F
+    Y -->|"rejected, pending approval"| RJQ
+    RJQ -->|yes| RJ
+    RJQ -->|"declined, needs new disposition"| F
+    P -->|"Tier 0: schema metadata only - all tenants"| D
+    P -->|"Tier 1: masked samples - non-restricted + DPA only"| D
+    P -->|"unstructured fields, policy allows"| N
+    P -->|"restricted tenant or AI-off"| F
+    D --> RK
+    RK -->|regulated| F
+    RK -->|"reference / standard"| LEV
+    LEV -->|"pass and auto-eligible"| MS
+    LEV -->|"fail or human-required"| F
+    N -->|"low confidence or restricted"| F
+    N -->|"approved signals"| E
+    F -->|approved| MS
+    MS --> M
+    M --> R
+    R --> E
+    A -.->|"media, packages, embedded HTML"| AST
+    AST --> E
+    E --> TWO
+    TWO --> G
+    G -->|pass| RC
+    G -->|fail| I
+    I -->|"remediate and replay"| M
+    RC -->|gap| I
+    U -.->|"archived records counted"| RC
+    RJ -.->|"excluded records counted"| RC
+    AST -.->|"asset manifests + dependency register"| RC
+    RC -->|balanced| REH
+    REH --> SIGN
+    SIGN -->|"issues found"| F
+    SIGN -->|approved| FRZ
+    FRZ --> DX
+    DX --> DN
+    DN --> DV
+    DV -->|issues| DR2
+    DR2 --> DX
+    DV -->|clean| IM
+    IM --> H
+    H --> V
+    V --> GN
+    GN -->|yes| REL
+    GN -->|no| RB
+    REL --> J
+    REL --> VP
+    REL --> HC
+    HC --> EX
+    EX -->|no| HC
+    EX -->|yes| DG
+    DG -->|"item open"| HC
+    DG -->|"all satisfied"| CL</pre></div>
+<div class="diagram-card" id="lifecycle"><h3>A3. Job lifecycle</h3><p class="source-note">Source: §8.2</p><div class="actions"><button data-expand>Expand diagram</button><button data-show-source>Show Mermaid source</button></div><div class="mermaid">
+stateDiagram-v2
+    [*] --> draft
+    draft --> probing : job gate passed
+    probing --> discovering : capabilities confirmed
+    discovering --> governance_review : inventory, totals, previews ready
+    governance_review --> discovering : scope or dependency check fails
+    governance_review --> approved : client approves
+    approved --> extracting
+    extracting --> mapping : landing zone complete
+    mapping --> staged : mapping set frozen, validated, reconciled
+    staged --> rehearsal
+    rehearsal --> staged : issues found
+    rehearsal --> signed_off : client signs rehearsal
+    signed_off --> frozen : source freeze
+    frozen --> delta
+    delta --> delta : remediate and re-diff
+    delta --> imported_hidden : delta clean
+    imported_hidden --> verifying
+    verifying --> released : signed go/no-go
+    verifying --> rolled_back : no-go
+    released --> hypercare
+    hypercare --> hypercare : compensating correction
+    hypercare --> closed : exit criteria met and decommission gate passed
+    staged --> rolled_back
+    rehearsal --> rolled_back
+    frozen --> rolled_back
+    delta --> rolled_back
+    imported_hidden --> rolled_back
+    rolled_back --> closed
+    closed --> [*]
+    note right of draft
+        paused and failed: from any non-terminal state,
+        return to the prior state (paused_from_status)
+        cancelled and expired: from any non-terminal state,
+        go to closed after cleanup
+    end note
+    note right of rehearsal
+        cutover_runs.run_type = rehearsal
+    end note
+    note right of delta
+        cutover_runs.run_type = delta
+    end note
+    note right of verifying
+        imported_hidden and verifying:
+        run_type = production_hidden
+    end note
+    note right of hypercare
+        released and hypercare:
+        run_type = release
+    end note
+    note right of rolled_back
+        run_type = rollback, closes the job,
+        a re-run is a new job
+    end note
+</div><pre hidden>stateDiagram-v2
+    [*] --> draft
+    draft --> probing : job gate passed
+    probing --> discovering : capabilities confirmed
+    discovering --> governance_review : inventory, totals, previews ready
+    governance_review --> discovering : scope or dependency check fails
+    governance_review --> approved : client approves
+    approved --> extracting
+    extracting --> mapping : landing zone complete
+    mapping --> staged : mapping set frozen, validated, reconciled
+    staged --> rehearsal
+    rehearsal --> staged : issues found
+    rehearsal --> signed_off : client signs rehearsal
+    signed_off --> frozen : source freeze
+    frozen --> delta
+    delta --> delta : remediate and re-diff
+    delta --> imported_hidden : delta clean
+    imported_hidden --> verifying
+    verifying --> released : signed go/no-go
+    verifying --> rolled_back : no-go
+    released --> hypercare
+    hypercare --> hypercare : compensating correction
+    hypercare --> closed : exit criteria met and decommission gate passed
+    staged --> rolled_back
+    rehearsal --> rolled_back
+    frozen --> rolled_back
+    delta --> rolled_back
+    imported_hidden --> rolled_back
+    rolled_back --> closed
+    closed --> [*]</pre></div>
+</section>
+<section id="low-level"><h2>Part B — Low-Level Architecture</h2><p class="desc">The major component groups, their responsibilities, and the flow between them.</p>
+<div class="diagram-card" id="components"><h3>B1. Component map</h3><p class="source-note">Source: §3.4, §7.3</p><div class="actions"><button data-expand>Expand diagram</button><button data-show-source>Show Mermaid source</button></div><div class="mermaid">
+flowchart TB
+    subgraph P1["Source access"]
+        direction TB
+        PRB["Capability Profiler<br/>probe, metadata and counts only: live edition, API version,<br/>rate limits, credential-scope audit, consistency mode, feasibility"]
+        CON["Connector Layer<br/>Universal Connector Engine<br/>+ Connector Profile (git) + Connection Config"]
+        CAP["Custom Adapter Plugin<br/>sandboxed escape hatch: SOAP, XML-RPC,<br/>multi-step SSO, dynamic GraphQL"]
+        STD["Standards Ingestion Layer<br/>OneRoster, IMSCC, QTI, SCORM, cmi5, xAPI, LTI,<br/>Open Badges, CSV, XML, JSON, vendor archives"]
+        DRS["Dump-Restore Sandbox<br/>ephemeral isolated DB,<br/>read-only extraction"]
+        CSE["Customer-Side Extractor<br/>client-run, outbound-only push"]:::deferred
+    end
+    subgraph P2["Raw zone and normalisation"]
+        direction LR
+        LZ[("Landing Zone<br/>raw, immutable, encrypted,<br/>per-job key, manifests")]:::store
+        NRM["Structural Normalizer<br/>shape, encoding, NFC, original + UTC time,<br/>entity bucketing, no field renaming"]
+        LZ --> NRM
+    end
+    subgraph P3["Discovery and source governance"]
+        direction LR
+        INV["Source Inventory Service + Data Classifier<br/>entity catalog, dependency graph,<br/>change-detection strategy,<br/>in-flight, consent and URL inventories"]
+        SOT["Source-of-Truth Resolver<br/>authority by entity or attribute,<br/>fallback order, orphan rule"]
+        ERS["Entity Resolution Service<br/>blocking keys, Arabic-aware matching,<br/>merge log with unmerge"]
+        DQP["Data Quality Profiler<br/>completeness, staleness, anomalies,<br/>independent control totals"]
+        INV --> SOT --> ERS --> DQP
+    end
+    subgraph P4["Approval and review"]
+        direction TB
+        PORT["Client Portal<br/>approvals with identity and artefact hash,<br/>rehearsal sign-off, go / no-go"]:::human
+        HRC["Human Review Console<br/>four-eyes on regulated fields,<br/>masked by default, queues by risk type"]:::human
+    end
+    subgraph P5["Mapping and routing"]
+        direction LR
+        TCR["Target Capability Router<br/>native, extension, archive,<br/>manual rebuild, reject"]
+        DEP["Data Exposure Policy<br/>Tier 0, Tier 1, AI-off,<br/>enforced in code"]
+        AIM["AI Mapping Engine<br/>R0-R4 ladder,<br/>forced-choice confidence scoring"]:::ai
+        TPL["Mapping Template Library<br/>approved templates, git artefacts"]
+        RKR["Risk-Class Router<br/>regulated, reference, standard"]
+        LEV["Local Evidence Verifier<br/>deterministic checks on a real sample"]
+        UES["Unstructured Extraction Service<br/>policy-gated, reads field content"]:::ai
+        MSR[("Mapping Set Registry + Overrides Ledger<br/>frozen, versioned, replayable fixes")]:::store
+        TCR --> DEP --> AIM --> RKR --> LEV --> MSR
+        TPL -.->|"R1 lookup"| AIM
+        DEP --> UES
+    end
+    subgraph P6["Apply, stage and verify"]
+        direction LR
+        APL["Mapping Applier<br/>frozen set + typed operators,<br/>idempotent per batch and set version"]
+        IDM[("Relationship Identity Map<br/>client + source scoped,<br/>deterministic IDs")]:::store
+        STG[("Staging DB<br/>per-job schema, region-pinned")]:::store
+        AMS["Asset Migration Service<br/>multipart copy, scan, dedupe,<br/>external-dependency register"]
+        SAN["Content Sanitizer<br/>allow-list + CSP for imported HTML"]
+        VAL["Validation Engine<br/>deterministic rules, no AI"]
+        REC["Reconciliation Engine<br/>control totals, column aggregates,<br/>row-level diff, KPI parity"]
+        APL --> IDM --> STG --> VAL --> REC
+        AMS --> SAN --> STG
+    end
+    subgraph P7["Bloom target and preserved data"]
+        direction TB
+        IMP["Import Engine<br/>upsert by deterministic ID,<br/>two-phase references"]
+        BIM["Bloom Bulk-Import Mode<br/>side-effect suppression, original timestamps,<br/>privileged import path, quota entitlement"]:::bloom
+        EXR["Bloom Extension Registry<br/>product-owned: which Bloom modules<br/>can receive migrated data"]:::bloom
+        VPX["Verification Proxy<br/>certificate verification + redirect map"]:::bloom
+        ARC[("Unsupported Data Archive<br/>read-only, object lock, fixity checks")]:::store
+    end
+    subgraph XP["Control and security planes"]
+        direction LR
+        ORC["Orchestrator<br/>durable job state machine, checkpoints, retries,<br/>human gates across every plane above"]:::ctrl
+        VLT["Credential Vault<br/>issue, verify scope, rotate, revoke, attest"]:::ctrl
+        CAT[("Data Classification Catalog<br/>drives masking, encryption,<br/>residency, retention")]:::ctrl
+        RPT["Reporting Service<br/>JSON + PDF / HTML migration report"]:::ctrl
+        LFR["Loss and Fidelity Report<br/>exact, approximated, archived,<br/>skipped, manually rebuilt"]:::ctrl
+        CST["Cost Meter<br/>per-job meters and budget caps"]:::ctrl
+        LFR -.->|"report section"| RPT
+    end
+    P1 -->|"raw extracts"| P2
+    P2 -->|"normalised batches"| P3
+    P3 -->|"inventory, scorecards, control totals"| P4
+    P4 -->|"approved scope and source of truth"| P5
+    P5 -->|"frozen mapping set"| P6
+    P6 -->|"reconciled staged data"| P7
+    P7 ~~~ XP
+    classDef store fill:#e0f2fe,stroke:#0369a1,color:#0c4a6e
+    classDef human fill:#fef3c7,stroke:#b45309,color:#78350f
+    classDef ai fill:#ede9fe,stroke:#6d28d9,color:#3b0764
+    classDef bloom fill:#dcfce7,stroke:#15803d,color:#14532d
+    classDef ctrl fill:#e2e8f0,stroke:#475569,color:#0f172a
+    classDef deferred fill:#f3f4f6,stroke:#6b7280,color:#374151,stroke-dasharray:5 5
+</div><pre hidden>flowchart TB
+    subgraph P1["Source access"]
+        direction TB
+        PRB["Capability Profiler<br/>probe, metadata and counts only: live edition, API version,<br/>rate limits, credential-scope audit, consistency mode, feasibility"]
+        CON["Connector Layer<br/>Universal Connector Engine<br/>+ Connector Profile (git) + Connection Config"]
+        CAP["Custom Adapter Plugin<br/>sandboxed escape hatch: SOAP, XML-RPC,<br/>multi-step SSO, dynamic GraphQL"]
+        STD["Standards Ingestion Layer<br/>OneRoster, IMSCC, QTI, SCORM, cmi5, xAPI, LTI,<br/>Open Badges, CSV, XML, JSON, vendor archives"]
+        DRS["Dump-Restore Sandbox<br/>ephemeral isolated DB,<br/>read-only extraction"]
+        CSE["Customer-Side Extractor<br/>client-run, outbound-only push"]:::deferred
+    end
+    subgraph P2["Raw zone and normalisation"]
+        direction LR
+        LZ[("Landing Zone<br/>raw, immutable, encrypted,<br/>per-job key, manifests")]:::store
+        NRM["Structural Normalizer<br/>shape, encoding, NFC, original + UTC time,<br/>entity bucketing, no field renaming"]
+        LZ --> NRM
+    end
+    subgraph P3["Discovery and source governance"]
+        direction LR
+        INV["Source Inventory Service + Data Classifier<br/>entity catalog, dependency graph,<br/>change-detection strategy,<br/>in-flight, consent and URL inventories"]
+        SOT["Source-of-Truth Resolver<br/>authority by entity or attribute,<br/>fallback order, orphan rule"]
+        ERS["Entity Resolution Service<br/>blocking keys, Arabic-aware matching,<br/>merge log with unmerge"]
+        DQP["Data Quality Profiler<br/>completeness, staleness, anomalies,<br/>independent control totals"]
+        INV --> SOT --> ERS --> DQP
+    end
+    subgraph P4["Approval and review"]
+        direction TB
+        PORT["Client Portal<br/>approvals with identity and artefact hash,<br/>rehearsal sign-off, go / no-go"]:::human
+        HRC["Human Review Console<br/>four-eyes on regulated fields,<br/>masked by default, queues by risk type"]:::human
+    end
+    subgraph P5["Mapping and routing"]
+        direction LR
+        TCR["Target Capability Router<br/>native, extension, archive,<br/>manual rebuild, reject"]
+        DEP["Data Exposure Policy<br/>Tier 0, Tier 1, AI-off,<br/>enforced in code"]
+        AIM["AI Mapping Engine<br/>R0-R4 ladder,<br/>forced-choice confidence scoring"]:::ai
+        TPL["Mapping Template Library<br/>approved templates, git artefacts"]
+        RKR["Risk-Class Router<br/>regulated, reference, standard"]
+        LEV["Local Evidence Verifier<br/>deterministic checks on a real sample"]
+        UES["Unstructured Extraction Service<br/>policy-gated, reads field content"]:::ai
+        MSR[("Mapping Set Registry + Overrides Ledger<br/>frozen, versioned, replayable fixes")]:::store
+        TCR --> DEP --> AIM --> RKR --> LEV --> MSR
+        TPL -.->|"R1 lookup"| AIM
+        DEP --> UES
+    end
+    subgraph P6["Apply, stage and verify"]
+        direction LR
+        APL["Mapping Applier<br/>frozen set + typed operators,<br/>idempotent per batch and set version"]
+        IDM[("Relationship Identity Map<br/>client + source scoped,<br/>deterministic IDs")]:::store
+        STG[("Staging DB<br/>per-job schema, region-pinned")]:::store
+        AMS["Asset Migration Service<br/>multipart copy, scan, dedupe,<br/>external-dependency register"]
+        SAN["Content Sanitizer<br/>allow-list + CSP for imported HTML"]
+        VAL["Validation Engine<br/>deterministic rules, no AI"]
+        REC["Reconciliation Engine<br/>control totals, column aggregates,<br/>row-level diff, KPI parity"]
+        APL --> IDM --> STG --> VAL --> REC
+        AMS --> SAN --> STG
+    end
+    subgraph P7["Bloom target and preserved data"]
+        direction TB
+        IMP["Import Engine<br/>upsert by deterministic ID,<br/>two-phase references"]
+        BIM["Bloom Bulk-Import Mode<br/>side-effect suppression, original timestamps,<br/>privileged import path, quota entitlement"]:::bloom
+        EXR["Bloom Extension Registry<br/>product-owned: which Bloom modules<br/>can receive migrated data"]:::bloom
+        VPX["Verification Proxy<br/>certificate verification + redirect map"]:::bloom
+        ARC[("Unsupported Data Archive<br/>read-only, object lock, fixity checks")]:::store
+    end
+    subgraph XP["Control and security planes"]
+        direction LR
+        ORC["Orchestrator<br/>durable job state machine, checkpoints, retries,<br/>human gates across every plane above"]:::ctrl
+        VLT["Credential Vault<br/>issue, verify scope, rotate, revoke, attest"]:::ctrl
+        CAT[("Data Classification Catalog<br/>drives masking, encryption,<br/>residency, retention")]:::ctrl
+        RPT["Reporting Service<br/>JSON + PDF / HTML migration report"]:::ctrl
+        LFR["Loss and Fidelity Report<br/>exact, approximated, archived,<br/>skipped, manually rebuilt"]:::ctrl
+        CST["Cost Meter<br/>per-job meters and budget caps"]:::ctrl
+        LFR -.->|"report section"| RPT
+    end
+    P1 -->|"raw extracts"| P2
+    P2 -->|"normalised batches"| P3
+    P3 -->|"inventory, scorecards, control totals"| P4
+    P4 -->|"approved scope and source of truth"| P5
+    P5 -->|"frozen mapping set"| P6
+    P6 -->|"reconciled staged data"| P7
+    P7 ~~~ XP</pre></div>
+</section>
+<footer>Revision 12 · Rendered using Mermaid.js from the architecture definitions. Some diagrams are wide; use the expand controls or browser zoom for easier inspection.</footer>
+</main>
+</body></html>
