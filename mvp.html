@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bloom migration prototype: architecture</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<style>
+:root{--bg:#f3f5f8;--ink:#1d2733;--mute:#5a6675;--line:#d5dce5;color-scheme:light dark}
+@media (prefers-color-scheme:dark){:root{--bg:#10151b;--ink:#e6ebf1;--mute:#98a5b5;--line:#2a3541}}
+*{box-sizing:border-box}
+body{margin:0;padding:28px clamp(14px,3vw,44px) 44px;background:var(--bg);color:var(--ink);font:15px/1.55 "Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+h1{margin:0 0 6px;font-size:1.4rem;line-height:1.25;letter-spacing:-.01em}
+.sub{margin:0 0 16px;color:var(--mute)}
+.key{display:flex;flex-wrap:wrap;gap:8px 22px;margin:0 0 16px;padding:0;list-style:none;color:var(--mute);font-size:.88rem}
+.key li{display:flex;align-items:center;gap:8px}
+.sw{display:inline-block;width:24px;height:14px;border-radius:3px;border:1.5px solid}
+.sw.e{background:#eef1f6;border-color:#6b7a90}
+.sw.t{background:#e3f4ea;border-color:#2f8f5b}
+.sw.b{background:#e6effc;border-color:#3b6fd4}
+.sw.g{background:#fff3d6;border-color:#c28a1b}
+.sw.a{background:#f6f7f9;border:1.5px dashed #9aa3b0}
+.card{background:#fff;color:#1d2733;border:1px solid var(--line);border-radius:10px;padding:18px;overflow-x:auto}
+.wrap{min-width:1150px}
+.mermaid{margin:0;font:inherit}
+.est{margin-top:30px;max-width:880px}
+.est h2{margin:0 0 6px;font-size:1.1rem}
+.est p,.est ul{max-width:72ch;color:var(--mute)}
+.est ul{padding-left:1.2em;margin:14px 0 0}
+.est li{margin:0 0 6px}
+table{border-collapse:collapse;width:100%;margin-top:14px;font-size:.92rem}
+th,td{padding:7px 10px;border-bottom:1px solid var(--line);text-align:left}
+th{color:var(--mute);font-weight:400}
+.n{text-align:right;font-variant-numeric:tabular-nums}
+tr.sum td{font-weight:700}
+</style>
+</head>
+<body>
+<h1>Bloom migration prototype: architecture</h1>
+<p class="sub">Data moves from one source into a Bloom sandbox and is verified before anyone sees it.</p>
+<ul class="key">
+<li><span class="sw e"></span>External system or person</li>
+<li><span class="sw t"></span>Migration CLI and its Postgres</li>
+<li><span class="sw b"></span>Bloom migration sandbox</li>
+<li><span class="sw g"></span>Gate</li>
+<li><span class="sw a"></span>Fallback source</li>
+<li>Bold line: hands-on build hours</li>
+<li>Cylinders are data stores</li>
+</ul>
+<div class="card"><div class="wrap"><pre class="mermaid">
+flowchart TB
+    subgraph SRC["Sources"]
+        X1["Pilot client Zoho Learn org&lt;br/&gt;read-only token with expiry"]:::outside
+        X2["D1, D2 Dummy data&lt;br/&gt;fixtures from a tiny real org,&lt;br/&gt;local mock server, seeded defects&lt;br/&gt;&lt;b&gt;D1 8 h, D2 8 h&lt;/b&gt;"]:::outside
+        X3["Moodle test site&lt;br/&gt;only if the pilot is not on Zoho"]:::alt
+    end
+
+    subgraph EXT["Extract and land"]
+        direction LR
+        E1["A3 Zoho extractor&lt;br/&gt;OAuth, view=all, page loop,&lt;br/&gt;backoff, lossless IDs&lt;br/&gt;&lt;b&gt;20 h&lt;/b&gt;"]:::tool
+        E2["A2 Landing writer&lt;br/&gt;raw JSON, SHA-256 manifest,&lt;br/&gt;landing-to-landing compare&lt;br/&gt;&lt;b&gt;4 h&lt;/b&gt;"]:::tool
+        E3[("Landing copy&lt;br/&gt;immutable, region-pinned")]:::tool
+        E1 --&gt; E2 --&gt; E3
+    end
+
+    subgraph MAP["Map, stage and gate"]
+        direction LR
+        M1["A5 Mapping file (YAML) + Applier&lt;br/&gt;closed operators, frozen by git tag&lt;br/&gt;&lt;b&gt;16 h&lt;/b&gt;"]:::tool
+        M2["A6 Identity map&lt;br/&gt;UUIDv5 IDs, hashed composite keys&lt;br/&gt;&lt;b&gt;4 h&lt;/b&gt;"]:::tool
+        M3[("A7 Staging schema in Postgres&lt;br/&gt;A4 canonical mini-schema&lt;br/&gt;&lt;b&gt;A7 4 h, A4 4 h&lt;/b&gt;")]:::tool
+        M4["B1 Validation + A8 disposition&lt;br/&gt;imported, held or rejected, with reason&lt;br/&gt;&lt;b&gt;B1 8 h, A8 4 h&lt;/b&gt;"]:::tool
+        H1["Source admin screens&lt;br/&gt;a person reads the counts&lt;br/&gt;(second channel)"]:::outside
+        M5{"B2 Control totals gate&lt;br/&gt;landed counts match admin counts,&lt;br/&gt;file hash recorded, blocks staged&lt;br/&gt;&lt;b&gt;4 h&lt;/b&gt;"}:::gate
+        M1 --&gt; M2 --&gt; M3 --&gt; M4 --&gt; M5
+        H1 --&gt; M5
+    end
+
+    subgraph IMP["Bloom migration sandbox (DigitalOcean Bangalore)"]
+        direction LR
+        IS["C2 Import service&lt;br/&gt;POST /internal/migration/v1/import/:entity&lt;br/&gt;service token, explicit IDs and timestamps,&lt;br/&gt;batched upsert, no events&lt;br/&gt;&lt;b&gt;24 h&lt;/b&gt;"]:::bloom
+        BD[("C1 Bloom sandbox data&lt;br/&gt;own Postgres, Redis and bucket,&lt;br/&gt;one tenant, unlimited entitlements&lt;br/&gt;&lt;b&gt;16 h&lt;/b&gt;")]:::bloom
+        SS["C3 Side-effect suppression&lt;br/&gt;hooks and queues off, SES unconfigured,&lt;br/&gt;webhooks blocked, mail sink&lt;br/&gt;&lt;b&gt;8 h&lt;/b&gt;"]:::bloom
+        RB["C4 Read-back&lt;br/&gt;read-only views and endpoints&lt;br/&gt;&lt;b&gt;4 h&lt;/b&gt;"]:::bloom
+        IS --&gt; BD --&gt; RB
+        SS -.-&gt;|"no mail, no events"| BD
+    end
+
+    subgraph VER["Verify after import"]
+        direction LR
+        V1["B3 Layer 2&lt;br/&gt;column aggregates,&lt;br/&gt;key-set hash&lt;br/&gt;&lt;b&gt;6 h&lt;/b&gt;"]:::tool
+        V2["B4 Layer 3&lt;br/&gt;row diff, 100% of&lt;br/&gt;completion facts&lt;br/&gt;&lt;b&gt;8 h&lt;/b&gt;"]:::tool
+        V3["B5 Layer 4&lt;br/&gt;KPI parity, three KPIs&lt;br/&gt;Zoho screens vs Bloom&lt;br/&gt;&lt;b&gt;4 h&lt;/b&gt;"]:::tool
+        V4{"B6 Tolerance gate&lt;br/&gt;PASS or FAIL&lt;br/&gt;per data class&lt;br/&gt;&lt;b&gt;2 h&lt;/b&gt;"}:::gate
+        V1 --&gt; V4
+        V2 --&gt; V4
+        V3 --&gt; V4
+    end
+
+    subgraph OUT["Sign off and exit"]
+        direction LR
+        Z1{"D3 Go / no-go&lt;br/&gt;email sign-off,&lt;br/&gt;file hash recorded&lt;br/&gt;&lt;b&gt;2 h&lt;/b&gt;"}:::gate
+        Z2["B7 Report&lt;br/&gt;one HTML or PDF page&lt;br/&gt;a non-engineer can read&lt;br/&gt;&lt;b&gt;8 h&lt;/b&gt;"]:::tool
+        Z3["C5 Purge&lt;br/&gt;landing copy, staging and sandbox data,&lt;br/&gt;token revoked, deletion record&lt;br/&gt;&lt;b&gt;4 h&lt;/b&gt;"]:::tool
+        Z1 --&gt; Z2 --&gt; Z3
+    end
+
+    subgraph RUN["Underneath every step"]
+        K1["A1 Job and step runner&lt;br/&gt;CLI + Postgres job and step tables,&lt;br/&gt;checkpoints, resume, gates as states&lt;br/&gt;&lt;b&gt;8 h&lt;/b&gt;"]:::tool
+        K2["Safety rules that stay&lt;br/&gt;read-only source, raw copy first,&lt;br/&gt;no side effects, no silent loss"]:::tool
+        K3["D4 Effort and defect log&lt;br/&gt;feeds the Gate 0 evidence&lt;br/&gt;&lt;b&gt;2 h&lt;/b&gt;"]:::tool
+    end
+
+    SRC --&gt;|"read-only extraction"| EXT
+    EXT --&gt;|"raw JSON, manifest, hashes"| MAP
+    MAP --&gt;|"staged and balanced"| IMP
+    IMP --&gt;|"read-back"| VER
+    VER --&gt;|"PASS or FAIL"| OUT
+    OUT -.-&gt;|"every step runs under"| RUN
+
+    classDef outside fill:#eef1f6,stroke:#6b7a90,stroke-width:1.4px,color:#26324a
+    classDef tool fill:#e3f4ea,stroke:#2f8f5b,stroke-width:1.5px,color:#0f3d27
+    classDef bloom fill:#e6effc,stroke:#3b6fd4,stroke-width:1.5px,color:#14306b
+    classDef gate fill:#fff3d6,stroke:#c28a1b,stroke-width:1.5px,color:#5a3c05
+    classDef alt fill:#f6f7f9,stroke:#9aa3b0,stroke-width:1.2px,stroke-dasharray:5 4,color:#4a5565
+    classDef grp fill:#f8fafc,stroke:#cfd8e3,color:#33425a
+    class SRC,EXT,MAP,IMP,VER,OUT,RUN grp
+</pre></div></div>
+<section class="est">
+<h2>Practical time to build</h2>
+<p>One developer, 8-hour days, 5 days a week, working in Cursor with Claude. Hours are hands-on time, including reviewing and testing what Claude writes. Each node above shows its own hours.</p>
+<table>
+<thead><tr><th></th><th class="n">Plan, days</th><th class="n">Realistic, hours</th><th class="n">Realistic, days</th></tr></thead>
+<tbody>
+<tr><td>A Pipeline (A1 to A8)</td><td class="n">11.5</td><td class="n">64</td><td class="n">8</td></tr>
+<tr><td>B Verification (B1 to B7)</td><td class="n">8.5</td><td class="n">40</td><td class="n">5</td></tr>
+<tr><td>C Bloom side (C1 to C5)</td><td class="n">8.0</td><td class="n">56</td><td class="n">7</td></tr>
+<tr><td>D Dummy data and operations (D1 to D4)</td><td class="n">4.25</td><td class="n">20</td><td class="n">2.5</td></tr>
+<tr class="sum"><td>Must features</td><td class="n">32.25</td><td class="n">180</td><td class="n">22.5</td></tr>
+<tr><td>Stage 0 probes</td><td class="n">0.5</td><td class="n">4</td><td class="n">0.5</td></tr>
+<tr><td>Integration and rework (first end-to-end runs)</td><td class="n">not in plan</td><td class="n">32</td><td class="n">4</td></tr>
+<tr class="sum"><td>Working prototype, about 5.5 weeks</td><td class="n"></td><td class="n">216</td><td class="n">27</td></tr>
+<tr><td>Pilot shadow run and fixes</td><td class="n">not in plan</td><td class="n">40</td><td class="n">5</td></tr>
+<tr class="sum"><td>With the pilot, about 6.5 weeks</td><td class="n"></td><td class="n">256</td><td class="n">32</td></tr>
+</tbody>
+</table>
+<ul>
+<li>Shrinks most: well-specified new code such as the runner, the mapping Applier, the validators, the report and the dummy generator (A1, A5, B1 to B7, D1). Claude writes the first pass in minutes. The hours go on tests, seeded defects and review.</li>
+<li>Barely shrinks: work that waits on a real system. Zoho discovery and throttling (A3, D2) and deploying Lyncs into a new environment (C1, 16 h where the plan has 12 h). C3 stays at the plan figure of 8 h because finding the hooks is fast but proving none were missed is not.</li>
+<li>C2 and C3 assume the developer already knows the Lyncs codebase. If not, add about 2 days.</li>
+<li>Not counted: waiting for Zoho API access (the trial may be only 7 days), pilot consent, and the client admin supplying control totals. The Should list is also excluded.</li>
+</ul>
+</section>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<script>
+(async()=>{
+  try{await Promise.race([document.fonts.load('400 13px "Atkinson Hyperlegible"'),new Promise(r=>setTimeout(r,2500))]);}catch(e){}
+  mermaid.initialize({startOnLoad:false,theme:'base',
+    flowchart:{curve:'basis',htmlLabels:true,nodeSpacing:30,rankSpacing:50,padding:12},
+    themeVariables:{fontFamily:'"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif',fontSize:'13px',lineColor:'#66758a',textColor:'#1d2733',clusterBkg:'#f8fafc',clusterBorder:'#cfd8e3',titleColor:'#33425a',edgeLabelBackground:'#ffffff'}});
+  await mermaid.run({querySelector:'.mermaid'});
+})();
+</script>
+</body>
+</html>
